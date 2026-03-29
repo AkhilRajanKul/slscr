@@ -1,0 +1,514 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Script Generator — Vikrant Launcher</title>
+  <link rel="stylesheet" href="{% static 'launcher/style.css' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    .topbar-nav { display: flex; gap: 8px; }
+    .nav-link {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+    }
+    .nav-link:hover { color: var(--cyan); border-color: rgba(0,245,255,0.45); background: rgba(0,245,255,0.06); }
+    .nav-link.active { color: var(--cyan); border-color: rgba(0,245,255,0.5); background: rgba(0,245,255,0.08); box-shadow: 0 0 10px rgba(0,245,255,0.12); }
+
+    .page-intro {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-radius: 18px;
+      margin-bottom: 18px;
+    }
+    .intro-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: rgba(0,245,255,0.07);
+      border: 1px solid var(--border);
+      display: grid; place-items: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      color: var(--cyan);
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(0,245,255,0.2);
+    }
+    .intro-text h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      margin: 0 0 4px;
+    }
+    .intro-text p { margin: 0; color: var(--muted); font-size: 0.82rem; }
+    .intro-badge {
+      margin-left: auto;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      color: var(--green);
+      background: rgba(53,255,138,0.07);
+      border: 1px solid rgba(53,255,138,0.25);
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* Two-column layout */
+    .gen-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .gen-col { display: flex; flex-direction: column; gap: 18px; }
+
+    /* Section cards */
+    .form-section {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.016);
+      overflow: hidden;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,245,255,0.035);
+    }
+    .section-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #050816;
+      background: var(--cyan);
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 2.5px;
+      color: var(--cyan);
+    }
+    .section-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Fields */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .req { color: var(--pink); line-height: 1; }
+    .hint { color: rgba(127,140,168,0.5); text-transform: none; letter-spacing: 0; font-size: 0.68rem; }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+      background: rgba(0,0,0,0.42);
+      color: var(--text);
+      border: 1px solid rgba(0,245,255,0.15);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.83rem;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0,245,255,0.07), inset 0 0 10px rgba(0,245,255,0.03);
+    }
+    input::placeholder, textarea::placeholder { color: rgba(127,140,168,0.4); }
+    textarea { resize: vertical; min-height: 66px; }
+    select option { background: #0a1020; }
+
+    .filename-preview {
+      font-size: 0.72rem;
+      color: rgba(0,245,255,0.55);
+      min-height: 15px;
+      padding-left: 2px;
+    }
+    .filename-preview strong { color: var(--cyan); }
+
+    /* Bottom action bar */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      border-radius: 18px;
+      margin-top: 4px;
+    }
+    .generate-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #050816;
+      background: var(--cyan);
+      border: none;
+      border-radius: 12px;
+      padding: 13px 26px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 0 24px rgba(0,245,255,0.4);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      white-space: nowrap;
+    }
+    .generate-btn:hover { background: #2fffff; box-shadow: 0 0 36px rgba(0,245,255,0.6); transform: translateY(-1px); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .reset-btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    .reset-btn:hover { color: var(--text); border-color: rgba(0,245,255,0.35); }
+
+    .btn-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(5,8,22,0.25);
+      border-top-color: #050816;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-banner {
+      display: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      flex: 1;
+    }
+    .result-banner.success { background: rgba(53,255,138,0.07); border: 1px solid rgba(53,255,138,0.28); color: var(--green); }
+    .result-banner.error   { background: rgba(255,79,216,0.07); border: 1px solid rgba(255,79,216,0.28); color: var(--pink); }
+
+    @media (max-width: 900px) {
+      .gen-layout { grid-template-columns: 1fr; }
+      .field-row   { grid-template-columns: 1fr; }
+      .intro-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <form style="display:none;">{% csrf_token %}</form>
+  <div class="bg-grid"></div>
+  <div class="scanlines"></div>
+
+  <div class="app-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar glass">
+      <div class="brand">
+        <div class="brand-badge">V</div>
+        <div>
+          <h1>VIKRANT SCRAP LAUNCHER</h1>
+          <p>BETA v3.0 // Partial API Attack</p>
+        </div>
+      </div>
+      <nav class="topbar-nav">
+        <a href="{% url 'home' %}" class="nav-link">⬡ &nbsp;Dashboard</a>
+        <a href="{% url 'script_generator' %}" class="nav-link active">⊕ &nbsp;Script Generator</a>
+      </nav>
+      <div class="system-pill">
+        <span class="dot pulse"></span>
+        ONLINE
+      </div>
+    </header>
+
+    <!-- PAGE INTRO STRIP -->
+    <div class="page-intro glass">
+      <div class="intro-icon">⊕</div>
+      <div class="intro-text">
+        <h2>SCRIPT GENERATOR</h2>
+        <p>Fill in the fields below to duplicate and deploy a new scraper for any target site.</p>
+      </div>
+      <div class="intro-badge">AUTO-DEPLOY READY</div>
+    </div>
+
+    <!-- FORM GRID -->
+    <div class="gen-layout">
+
+      <!-- LEFT -->
+      <div class="gen-col">
+
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">1</div>
+            <span class="section-title">SITE CONFIG</span>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label>Base URL <span class="req">*</span></label>
+              <input id="base_url" type="url" placeholder="https://affiliate.example.com" />
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Login Path</label>
+                <input id="login_path" type="text" value="/login" />
+              </div>
+              <div class="field">
+                <label>Chrome Version</label>
+                <input id="chrome_version" type="number" value="146" min="90" max="200" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Reporting Endpoint URL <span class="req">*</span></label>
+              <input id="report_url" type="url" value="https://reporting.uvwin2024.co/reports/v2/affiliate-report/users" />
+            </div>
+            <div class="field">
+              <label>Output CSV Folder</label>
+              <input id="output_path" type="text" value="C:\Users\aushr\Music\vik\data\input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">2</div>
+            <span class="section-title">CREDENTIALS</span>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label>Username / Email <span class="req">*</span></label>
+              <input id="username" type="text" placeholder="your_username" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Password <span class="req">*</span></label>
+              <input id="password" type="password" placeholder="••••••••" autocomplete="new-password" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">3</div>
+            <span class="section-title">TARGET DATA</span>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label>Parent IDs <span class="req">*</span> <span class="hint">— comma-separated integers</span></label>
+              <textarea id="parent_ids" placeholder="17021506041, 17177263119"></textarea>
+            </div>
+            <div class="field">
+              <label>Lead Source <span class="req">*</span> <span class="hint">— becomes the filename</span></label>
+              <input id="lead_source" type="text" placeholder="e.g. SiteAlpha" />
+              <div class="filename-preview" id="filename_preview">→ file: <strong>SiteAlpha.py</strong> &nbsp;/&nbsp; csv: <strong>SiteAlpha.csv</strong></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /left -->
+
+      <!-- RIGHT -->
+      <div class="gen-col">
+
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">4</div>
+            <span class="section-title">SELENIUM DRIVER</span>
+          </div>
+          <div class="section-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Platform</label>
+                <input id="platform" type="text" value="Win32" />
+              </div>
+              <div class="field">
+                <label>Browser Language</label>
+                <input id="languages" type="text" value="en-US, en" />
+              </div>
+            </div>
+            <div class="field">
+              <label>WebGL Vendor</label>
+              <input id="webgl_vendor" type="text" value="Intel Inc." />
+            </div>
+            <div class="field">
+              <label>WebGL Renderer</label>
+              <input id="webgl_renderer" type="text" value="Intel Iris OpenGL" />
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Min Human Delay (s)</label>
+                <input id="delay_min" type="number" value="2" min="1" max="30" />
+              </div>
+              <div class="field">
+                <label>Max Human Delay (s)</label>
+                <input id="delay_max" type="number" value="5" min="1" max="60" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">5</div>
+            <span class="section-title">LOGIN XPATHS</span>
+          </div>
+          <div class="section-body">
+            <div class="field">
+              <label>Username Field</label>
+              <input id="xpath_username" type="text" value='//*[@id="root"]/div[1]/div[2]/div/form/span/div/div/input' />
+            </div>
+            <div class="field">
+              <label>Password Field</label>
+              <input id="xpath_password" type="text" value='//*[@id="standard-adornment-password"]' />
+            </div>
+            <div class="field">
+              <label>Submit Button</label>
+              <input id="xpath_submit" type="text" value='//*[@id="root"]/div[1]/div[2]/div/form/div[5]/button/span[1]' />
+            </div>
+            <div class="field">
+              <label>Post-Login Nav Button</label>
+              <input id="xpath_nav" type="text" value='//*[@id="root"]/ion-app/div[3]/ion-toolbar/div/div/ion-header/div/a[2]/span/span[1]' />
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /right -->
+
+    </div><!-- /gen-layout -->
+
+    <!-- ACTION BAR -->
+    <div class="action-bar glass">
+      <button class="generate-btn" id="generateBtn" onclick="generateScript()">
+        <span class="btn-spinner" id="btn-spinner"></span>
+        <span id="btn-label">⊕ &nbsp;GENERATE SCRIPT</span>
+      </button>
+      <button class="reset-btn" onclick="resetForm()">↺ Reset</button>
+      <div class="result-banner" id="resultBanner"></div>
+    </div>
+
+  </div><!-- /app-shell -->
+
+  <script>
+    function getCookie(n) {
+      let v = null;
+      if (document.cookie) for (const c of document.cookie.split(";")) { const t = c.trim(); if (t.startsWith(n+"=")) { v = decodeURIComponent(t.slice(n.length+1)); break; } }
+      return v;
+    }
+    const val = id => { const e = document.getElementById(id); return e ? e.value.trim() : ""; };
+
+    document.getElementById("lead_source").addEventListener("input", function () {
+      const s = this.value.trim().replace(/[^\w\-]/g,"_") || "script";
+      document.getElementById("filename_preview").innerHTML =
+        `→ file: <strong>${s}.py</strong> &nbsp;/&nbsp; csv: <strong>${s}.csv</strong>`;
+    });
+
+    async function generateScript() {
+      const btn = document.getElementById("generateBtn");
+      const spinner = document.getElementById("btn-spinner");
+      const label   = document.getElementById("btn-label");
+      const banner  = document.getElementById("resultBanner");
+
+      const required = [["base_url","Base URL"],["username","Username"],["password","Password"],
+                        ["parent_ids","Parent IDs"],["lead_source","Lead Source"],["report_url","Reporting Endpoint"]];
+      for (const [id, name] of required) {
+        if (!val(id)) { showBanner("error", `⚠  "${name}" is required.`); document.getElementById(id).focus(); return; }
+      }
+
+      btn.disabled = true;
+      spinner.style.display = "inline-block";
+      label.textContent = "GENERATING...";
+      banner.style.display = "none";
+
+      const body = new URLSearchParams({
+        base_url:val("base_url"), login_path:val("login_path"), username:val("username"),
+        password:val("password"), parent_ids:val("parent_ids"), lead_source:val("lead_source"),
+        output_path:val("output_path"), chrome_version:val("chrome_version"), platform:val("platform"),
+        languages:val("languages"), webgl_vendor:val("webgl_vendor"), webgl_renderer:val("webgl_renderer"),
+        delay_min:val("delay_min"), delay_max:val("delay_max"), xpath_username:val("xpath_username"),
+        xpath_password:val("xpath_password"), xpath_submit:val("xpath_submit"),
+        xpath_nav:val("xpath_nav"), report_url:val("report_url"),
+      });
+
+      try {
+        const res  = await fetch("/generate-script/", {
+          method:"POST", credentials:"same-origin",
+          headers:{"X-Requested-With":"XMLHttpRequest","X-CSRFToken":getCookie("csrftoken"),"Content-Type":"application/x-www-form-urlencoded"},
+          body:body.toString()
+        });
+        const data = await res.json();
+        showBanner(data.ok ? "success" : "error", (data.ok ? "✔  " : "✖  ") + (data.message || "Unknown error"));
+      } catch(err) {
+        showBanner("error","✖  Network error — check the console."); console.error(err);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = "none";
+        label.textContent = "⊕ \u00a0GENERATE SCRIPT";
+      }
+    }
+
+    function showBanner(type, msg) {
+      const b = document.getElementById("resultBanner");
+      b.className = "result-banner " + type;
+      b.textContent = msg;
+      b.style.display = "block";
+    }
+
+    const DEFAULTS = {
+      login_path:"/login", chrome_version:"146", platform:"Win32", languages:"en-US, en",
+      webgl_vendor:"Intel Inc.", webgl_renderer:"Intel Iris OpenGL", delay_min:"2", delay_max:"5",
+      output_path:String.raw`C:\Users\aushr\Music\vik\data\input`,
+      report_url:"https://reporting.uvwin2024.co/reports/v2/affiliate-report/users",
+      xpath_username:'//*[@id="root"]/div[1]/div[2]/div/form/span/div/div/input',
+      xpath_password:'//*[@id="standard-adornment-password"]',
+      xpath_submit:'//*[@id="root"]/div[1]/div[2]/div/form/div[5]/button/span[1]',
+      xpath_nav:'//*[@id="root"]/ion-app/div[3]/ion-toolbar/div/div/ion-header/div/a[2]/span/span[1]',
+    };
+    function resetForm() {
+      ["base_url","login_path","username","password","parent_ids","lead_source","output_path",
+       "chrome_version","platform","languages","webgl_vendor","webgl_renderer","delay_min","delay_max",
+       "xpath_username","xpath_password","xpath_submit","xpath_nav","report_url"].forEach(id => {
+        const e = document.getElementById(id); if (e) e.value = DEFAULTS[id]||"";
+      });
+      document.getElementById("filename_preview").innerHTML = '→ file: <strong>SiteAlpha.py</strong> &nbsp;/&nbsp; csv: <strong>SiteAlpha.csv</strong>';
+      document.getElementById("resultBanner").style.display = "none";
+    }
+  </script>
+</body>
+</html>
